@@ -1,0 +1,7 @@
+Model,Accuracy (%),Precision (%),Recall (%),F1 Score (%),ROC AUC (%)
+Random Forest,99.11,100.0,98.5,99.24,99.71
+Gradient Boosting,99.01,100.0,98.33,99.16,99.77
+Decision Tree,98.12,98.18,98.67,98.42,97.99
+Logistic Regression,97.92,99.49,97.0,98.23,99.75
+Support Vector Machine,97.92,98.82,97.67,98.24,99.85
+K-Nearest Neighbors,96.23,96.52,97.17,96.84,98.87

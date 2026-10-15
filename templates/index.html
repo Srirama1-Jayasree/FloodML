@@ -1,603 +1,357 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>FloodML</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <meta content="" name="keywords" />
-    <meta content="" name="description" />
-
-    <!-- Favicons -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AquaSentinel AI</title>
     <link
-      href="{{ url_for('static', filename='img/favicon-2.png') }}"
-      rel="icon"
-    />
-    <link href="img/apple-touch-icon.png" rel="apple-touch-icon" />
-
-    <!-- Google Fonts -->
-    <link
-      href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,500,600,700,700i|Montserrat:300,400,500,600,700"
       rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
     />
-
-    <!-- Bootstrap CSS File -->
-    <link
-      href="{{ url_for('static', filename='lib/bootstrap/css/bootstrap.min.css') }}"
-      rel="stylesheet"
-    />
-
-    <!-- Libraries CSS Files -->
-    <link
-      href="{{ url_for('static', filename='lib/font-awesome/css/font-awesome.min.css') }}"
-      rel="stylesheet"
-    />
-    <link
-      href="{{ url_for('static', filename='lib/animate/animate.min.css') }}"
-      rel="stylesheet"
-    />
-    <link
-      href="{{ url_for('static', filename='lib/ionicons/css/ionicons.min.css') }}"
-      rel="stylesheet"
-    />
-    <link
-      href="{{ url_for('static', filename='lib/owlcarousel/assets/owl.carousel.min.css') }}"
-      rel="stylesheet"
-    />
-    <link
-      href="{{ url_for('static', filename='lib/lightbox/css/lightbox.min.css') }}"
-      rel="stylesheet"
-    />
-    <!-- Main Stylesheet File -->
-    <link
-      href="{{ url_for('static', filename='css/style.css') }}"
-      rel="stylesheet"
-    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <style>
+      :root {
+        --bg: #071b2d;
+        --panel: #0d2138;
+        --panel-alt: #122a46;
+        --primary: #47b6ff;
+        --accent: #6ee7b7;
+        --warning: #ffbf47;
+        --danger: #ff6b6b;
+        --text: #eaf7ff;
+        --muted: #9ec0d9;
+        --border: rgba(255,255,255,0.08);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; font-family: Arial, sans-serif; background: linear-gradient(180deg, #061522 0%, #0b233d 100%);
+        color: var(--text);
+      }
+      .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+      .topbar { display:flex; justify-content:space-between; align-items:center; padding: 18px 0 12px; }
+      .brand { font-weight:700; letter-spacing:0.08em; text-transform: uppercase; color: var(--primary); }
+      .badge { background: rgba(71,182,255,0.12); border: 1px solid var(--border); border-radius: 999px; padding: 8px 12px; color: var(--muted); }
+      .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:18px; margin-top: 18px; }
+      .card { background: rgba(13,33,56,0.94); border:1px solid var(--border); border-radius:16px; padding:18px; box-shadow: 0 12px 30px rgba(0,0,0,0.18); }
+      .kpi { font-size: 1.9rem; font-weight: 700; margin-top: 12px; }
+      .label { color: var(--muted); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
+      .status-pill {
+        display:inline-block; padding:6px 10px; border-radius:999px; font-size:0.74rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;
+      }
+      .status-low { background: rgba(110,231,183,0.12); color: var(--accent); }
+      .status-moderate { background: rgba(255,191,71,0.12); color: var(--warning); }
+      .status-high { background: rgba(255,107,107,0.12); color: var(--danger); }
+      .status-critical { background: rgba(255,107,107,0.2); color: #ffd1d1; }
+      .status-unavailable { background: rgba(158,192,217,0.12); color: var(--muted); }
+      .hero { display:grid; grid-template-columns: 1.3fr 0.9fr; gap: 22px; margin-top: 18px; }
+      .map-box { min-height: 260px; border:1px solid var(--border); border-radius:16px; background: linear-gradient(135deg, rgba(71,182,255,0.12), rgba(110,231,183,0.08)); overflow: hidden; }
+      #mini-map { height: 260px; width: 100%; }
+      form { display:flex; gap:12px; flex-wrap:wrap; }
+      input, button { border-radius: 10px; border:1px solid var(--border); background: rgba(255,255,255,0.02); color: var(--text); padding:12px 14px; }
+      button { background: linear-gradient(135deg, var(--primary), #1d88d8); color: #04151d; font-weight:700; border:none; cursor:pointer; }
+      .two-col { display:grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; margin-top: 18px; }
+      .three-col { display:grid; grid-template-columns: 1.15fr 0.85fr; gap: 18px; margin-top: 18px; }
+      ul { margin:0; padding-left: 18px; color: var(--text); }
+      .muted { color: var(--muted); }
+      .footer-note { margin-top: 18px; color: var(--muted); font-size: 0.88rem; }
+      .chart-wrap { position: relative; height: 280px; }
+      .small-text { color: var(--muted); font-size: 0.82rem; }
+      @media (max-width: 760px) { .hero, .two-col, .three-col { grid-template-columns: 1fr; } }
+    </style>
   </head>
-
   <body>
-    <!--==========================
-  Header
-  ============================-->
-    <header id="header">
-      <div id="topbar">
-        <div class="container">
-          <div class="social-links">
-            <!-- <a href="#" class="twitter"><i class="fa fa-twitter"></i></a>
-            <a href="#" class="facebook"><i class="fa fa-facebook"></i></a>
-            <a href="#" class="linkedin"><i class="fa fa-linkedin"></i></a>
-            <a href="#" class="instagram"><i class="fa fa-instagram"></i></a> -->
+    <div class="container">
+      <div class="topbar">
+        <div class="brand">AquaSentinel AI</div>
+        <div class="badge" id="last-updated">Latest update: loading…</div>
+      </div>
+
+      <div class="hero">
+        <div class="card">
+          <div class="label">Flood risk overview</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top: 12px;">
+            <h2 id="location-title" style="margin:0; font-size: 2.2rem;">{{ data.location or 'Hyderabad' }}</h2>
+            <span id="risk-pill" class="status-pill status-unavailable">{{ data.risk_level or 'Data unavailable' }}</span>
           </div>
+          <p class="muted" id="summary-text" style="margin-top:14px;">{{ data.weather.message or 'Weather data unavailable.' }}</p>
+          <form id="location-form">
+            <input type="text" id="location-input" name="location" value="{{ location or 'Hyderabad' }}" placeholder="Enter a city" />
+            <button type="submit">Refresh</button>
+          </form>
+          <div class="footer-note">Recommended Action: {{ (data.water_management.recommended_action) if data.water_management else 'Recommended Action' }}<br />{{ (data.water_management.confirmation_required) if data.water_management else 'Requires human/operator confirmation.' }}</div>
+        </div>
+        <div class="card map-box">
+          <div id="mini-map"></div>
         </div>
       </div>
 
-      <div class="container">
-        <div class="logo float-left">
-          <!-- Uncomment below if you prefer to use an image logo -->
-          <!-- <h1 class="text-light">
-            <a href="#intro" class="scrollto"><span>FloodML</span></a>
-          </h1> -->
-          <a href="#header" class="scrollto"
-            ><img
-              style="margin-top: -5px; min-height: 50px;"
-              src="{{ url_for('static', filename='img/logo.png') }}"
-              alt=""
-              class="img-fluid"
-          /></a>
+      <div class="grid">
+        <div class="card">
+          <div class="label">Probability</div>
+          <div class="kpi" id="probability-value">{{ data.probability if data.probability is not none else 'Data unavailable' }}</div>
         </div>
-
-        <nav class="main-nav float-right d-none d-lg-block">
-          <ul>
-            <li class="active"><a href="index.html">Home</a></li>
-            <li><a href="plots.html">Plots</a></li>
-            <li><a href="heatmaps.html">Heatmaps</a></li>
-            <li><a href="satellite.html">Satellite</a></li>
-            <li><a href="predicts.html">Predict</a></li>
-          </ul>
-        </nav>
-        <!-- .main-nav -->
-      </div>
-    </header>
-    <!-- #header -->
-
-    <!--==========================
-    Intro Section
-  ============================-->
-    <section id="intro" class="clearfix">
-      <div class="container d-flex h-100">
-        <div class="row justify-content-center align-self-center">
-          <div class="col-md-5 intro-info order-md-first order-last" style="background-color: transparent;padding-right:50px;">
-            <!-- <h2 style="color:#00BFFF;">FloodML</h2> -->
-            <a href="#header" class="scrollto"
-            ><img
-              style="margin-top: 0px; max-height: 150px;"
-              src="{{ url_for('static', filename='img/logo.png') }}"
-              alt=""
-              class="img-fluid"
-          /></a>
-            <h3 style="padding-top:30px;padding-left:10px;line-height: 40px;">Helping prepare people and their governments, one flood prediction at a time</h3>
-            <br />
-            <div style="padding-left:10px;">
-              <a href="#about" class="btn-get-started scrollto">Get Started</a>
-            </div>
-          </div>
-
-          <div class="col-md-7 intro-img order-md-last order-first" style="background-color: transparent;">
-            <!-- <img
-              src="{{ url_for('static', filename='img/er.png') }}"
-              alt=""
-              class="img-fluid"
-            /> -->
-            <iframe width="750" height="500" src="https://www.youtube.com/embed/4PXj7bOD7IY" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-          </div>
+        <div class="card">
+          <div class="label">Water status</div>
+          <div class="kpi" id="water-status">{{ data.water_management.status if data.water_management else 'Data unavailable' }}</div>
+        </div>
+        <div class="card">
+          <div class="label">Temperature</div>
+          <div class="kpi" id="temperature-value">{{ data.weather.temperature if data.weather and data.weather.temperature is not none else 'Data unavailable' }}</div>
+        </div>
+        <div class="card">
+          <div class="label">Rainfall</div>
+          <div class="kpi" id="rainfall-value">{{ data.weather.rainfall if data.weather and data.weather.rainfall is not none else 'Data unavailable' }}</div>
         </div>
       </div>
-    </section>
-    <!-- #intro -->
 
-    <main id="main">
-      <!--==========================
-      About Us Section
-    ============================-->
-      <section id="about">
-        <div class="container">
-          <div class="row">
-            <div class="col-lg-5 col-md-6">
-              <div class="about-img">
-                <img
-                  src="{{ url_for('static', filename='img/images.jpg') }}"
-                  alt=""
-                />
-              </div>
-            </div>
-
-            <div class="col-lg-7 col-md-6">
-              <div class="about-content">
-                <h2>About FloodML</h2>
-                <h3>
-                  A web app to help users and the government prepare for and reallocate resources for floods.
-                </h3>
-                <p>
-                  Floods are one of the most dangerous and frequent natural
-                  disasters in the world.
-                </p>
-                <p>
-                  Every year, thousands of people die from the floods and
-                  millions of people lose their homes and livelihoods. 
-                  In many states around India and China's Yellow River Valley, some of the world's worst floods have killed thousands, if not millions of people.
-                </p>
-                <p>
-                  Our team wanted to help solve this problem, so we created FloodML to predict
-                  floods and their impact before they even happen. Then, we
-                  display this information in an interactive graphical format, making the information
-                  compelling and easy to understand for people and governments alike.
-                </p>
-              </div>
-            </div>
+      <div class="three-col">
+        <div class="card">
+          <div class="label">Historic risk trend</div>
+          <div class="chart-wrap">
+            <canvas id="riskChart" aria-label="Historic flood risk chart"></canvas>
           </div>
+          <div class="small-text" id="chartPlaceholder">Awaiting historical alert data…</div>
         </div>
-      </section>
-      <!-- #about -->
-
-      <!--==========================
-      Services Section
-    ============================-->
-      <section id="services" class="section-bg">
-        <div class="container">
-          <header class="section-header">
-            <h3>Services</h3>
-            <p>
-              Our website offers many services to help people plan and prepare for floods,
-              and help the government reallocate resources to those most in need.
-            </p>
-          </header>
-
-          <div class="row">
-            <div
-              class="col-md-6 col-lg-3 wow bounceInUp"
-              data-wow-duration="1.4s"
-            >
-              <div class="box" style="height: 320px;">
-                <div class="icon" style="background: #fceef3;">
-                  <i
-                    class="ion-ios-analytics-outline"
-                    style="color: #ff689b;"
-                  ></i>
-                </div>
-                <h4 class="title"><a href="plots.html">View Plots</a></h4>
-                <p class="description">
-                  On our website, you can view plots showing flood prediction,
-                  precipitation analysis, and damage analysis.
-                </p>
-              </div>
-            </div>
-            <div
-              class="col-md-6 col-lg-3 wow bounceInUp"
-              data-wow-duration="1.4s"
-            >
-              <div class="box" style="height: 320px;">
-                <div class="icon" style="background: #fff0da;">
-                  <i
-                    class="ion-ios-bookmarks-outline"
-                    style="color: #e98e06;"
-                  ></i>
-                </div>
-                <h4 class="title"><a href="heatmaps.html">View Heatmaps</a></h4>
-                <p class="description">
-                  Our website also displays interactive heatmaps sharing various realtime data on floods. 
-                </p>
-              </div>
-            </div>
-
-            <div
-              class="col-md-6 col-lg-3 wow bounceInUp"
-              data-wow-delay="0.1s"
-              data-wow-duration="1.4s"
-            >
-              <div class="box" style="height: 320px;">
-                <div class="icon" style="background: #eafde7;">
-                  <i
-                    class="ion-ios-speedometer-outline"
-                    style="color: #41cf2e;"
-                  ></i>
-                </div>
-                <h4 class="title"><a href="satellite.html">Satellite Images</a></h4>
-                <p class="description">
-                  We analyzed data from NASA's GPM Project, and displayed georeferenced plots for sevaral cities.
-                </p>
-              </div>
-            </div>
-
-            <div
-              class="col-md-6 col-lg-3 wow bounceInUp"
-              data-wow-delay="0.1s"
-              data-wow-duration="1.4s"
-            >
-              <div class="box" style="height: 320px;">
-                <div class="icon" style="background: #e6fdfc;">
-                  <i class="ion-ios-paper-outline" style="color: #3fcdc7;"></i>
-                </div>
-                <h4 class="title"><a href="predicts.html">Predict Floods</a></h4>
-                <p class="description">
-                  Lastly, our website allows you to predict floods in realtime through our machine learning algorithm.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      <!-- #services -->
-
-      <!--==========================
-      Why Us Section
-    ============================-->
-      <section id="why-us" class="wow fadeIn">
-        <div class="container">
-          <div class="row counters">
-            <div class="col-lg-3 col-6 text-center">
-              <span data-toggle="counter-up">25</span>
-              <p>Percent of deaths from natural disasters attributed to floods</p>
-            </div>
-
-            <div class="col-lg-3 col-6 text-center">
-              <span data-toggle="counter-up">2.3</span>
-              <p>Billion people affected by floods in the last 2 decades</p>
-            </div>
-
-            <div class="col-lg-3 col-6 text-center">
-              <span data-toggle="counter-up">40</span>
-              <p>Billion dollars in damages worldwide annually</p>
-            </div>
-
-            <div class="col-lg-3 col-6 text-center">
-              <span data-toggle="counter-up">1</span>
-              <p>Million people were displaced in India in 2019 alone.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!--==========================
-      Call To Action Section
-    ============================-->
-      <!-- <section id="call-to-action" class="wow fadeInUp">
-        <div class="container">
-          <div class="row">
-            <div class="col-lg-9 text-center text-lg-left">
-              <h3 class="cta-title">Call To Action</h3>
-              <p class="cta-text">
-                Duis aute irure dolor in reprehenderit in voluptate velit esse
-                cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-                cupidatat non proident, sunt in culpa qui officia deserunt
-                mollit anim id est laborum.
-              </p>
-            </div>
-            <div class="col-lg-3 cta-btn-container text-center">
-              <a class="cta-btn align-middle" href="#">Call To Action</a>
-            </div>
-          </div>
-        </div>
-      </section> -->
-      <!-- #call-to-action -->
-
-      <!--==========================
-      Team Section
-    ============================-->
-      <section id="team" class="section-bg">
-        <div class="container">
-          <div class="section-header">
-            <h3>Team</h3>
-            <p>
-              <!-- Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-              accusantium doloremque -->
-            </p>
-          </div>
-
-          <div class="row">
-            <div class="col-lg-4 col-md-4 wow fadeInUp">
-              <div class="member">
-                <img
-                  src="{{ url_for('static', filename='img/nand-square.jpg') }}"
-                  class="img-fluid"
-                  alt=""
-                  width="500"
-                />
-                <div class="member-info">
-                  <div class="member-info-content">
-                    <h4>Nand Vinchhi</h4>
-                    <span>Machine Learning and Data Visualization</span>
-                    <div class="social">
-                      <a
-                        href="https://www.linkedin.com/in/nand-vinchhi-06524a1ab/?originalSubdomain=in"
-                        ><i class="fa fa-linkedin"></i
-                      ></a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-lg-4 col-md-4 wow fadeInUp" data-wow-delay="0.1s">
-              <div class="member">
-                <img
-                  src="{{ url_for('static', filename='img/veer-square.jpg') }}"
-                  class="img-fluid"
-                  alt=""
-                  width="500"
-                />
-                <div class="member-info">
-                  <div class="member-info-content">
-                    <h4>Veer Gadodia</h4>
-                    <span>Machine Learning and Front-end</span>
-                    <div class="social">
-                      <a href="https://www.linkedin.com/in/veergadodia/"
-                        ><i class="fa fa-linkedin"></i
-                      ></a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-lg-4 col-md-4 wow fadeInUp" data-wow-delay="0.2s">
-              <div class="member">
-                <img
-                  src="{{ url_for('static', filename='img/mihir-square.jpg') }}"
-                  class="img-fluid"
-                  alt=""
-                  width="500"
-                />
-                <div class="member-info">
-                  <div class="member-info-content">
-                    <h4>Mihir Kachroo</h4>
-                    <span>Data mining and Front-end</span>
-                    <div class="social">
-                      <a
-                        href="https://www.linkedin.com/in/mihir-kachroo/?originalSubdomain=ca"
-                        ><i class="fa fa-linkedin"></i
-                      ></a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      <!-- #team -->
-
-      <!--==========================
-      Frequently Asked Questions Section
-    ============================-->
-      <section id="faq">
-        <div class="container">
-          <header class="section-header">
-            <h3>Frequently Asked Questions</h3>
-            <p></p>
-          </header>
-
-          <ul id="faq-list" class="wow fadeInUp">
-            <li>
-              <a data-toggle="collapse" class="collapsed" href="#faq1"
-                >Inspiration <i class="ion-android-remove"></i
-              ></a>
-              <div id="faq1" class="collapse" data-parent="#faq-list">
-                <p>
-                  According to the World Resources Institute, over 80% of India's population, that is, 1.08 billion people, are at risk due to floods. Floods cause an economic loss of nearly 15 Billion USD per year in India. In the recent Kerala flood tragedy, over 100 people lost their lives, and over 15,000 houses and buildings were swept away in the torrential rains. These kinds of floods happen almost every single year in the flood prone areas, and cause major damage to life and property. The major cause of this is overflowing of rivers, reservoirs and other water bodies due to extensive rainfall during the monsoon season. We wanted to make a system for effective prediction of floods in India. This kind of system does not exist yet due to lack of quality data for prediction.
-                </p>
-              </div>
-            </li>
-
-            <li>
-              <a data-toggle="collapse" href="#faq2" class="collapsed"
-                >How we built it <i class="ion-android-remove"></i
-              ></a>
-              <div id="faq2" class="collapse" data-parent="#faq-list">
-                <p>
-                  <b>THE DATASET</b><br>
-                  <br>
-Our thesis was that we could predict floods from weather data using machine learning. For the dataset, we first scraped this website http://floodlist.com/tag/india using the python beautiful-soup 4 library. This website gave us data about past floods India.- when and where they occurred. We then used the visual crossing weather API to obtain historic weather data such as precipitation, humidity, temperature data, cloud cover etc. in those areas, and during those times. We also performed data augmentation on this, and then stored it in a .csv file.<br>
-<br>
-<b>ML MODEL</b><br>
-<br>
-Our ML model is based on python sci-kit learn library. We used pandas to generate a data-frame from the .csv file, and then tried various ML models such as Logistic regression, KNN, and Random Forester. Out of these, the Random Forester classifier gave the highest accuracy of 98.71% on the test set. We then saved our model using a .pickle file.<br>
-<br>
-<b>DATA VISUALIZATION</b><br>
-<br>
-We first obtained a dataset of the major cities and towns in India (around 200 of them) along with their latitude, longitude and population. We then got the weather forecast of each city using the weather API and ran that into our ML model. Next, we plotted the data from the ML model on a map, using plotly chart studio. The various maps represent various data such as flood prediction, precipitation and damage estimates, in the form of scatter plots, heat-maps and bubble plots. The damage estimates were calculated using the flood prediction and population. We also plotted it on satellite images.<br>
-<br>
-<b>FRONT-END AND HOSTING</b><br>
-<br>
-Our web app is based on the flask python framework. We rendered HTML templates on top of this flask back-end, and styled it using CSS. Our web app is hosted via Heroku.<br>
-<br>                
-</p>
-              </div>
-            </li>
-
-            <li>
-              <a data-toggle="collapse" href="#faq3" class="collapsed"
-                >Accomplishments we are proud of<i
-                  class="ion-android-remove"
-                ></i
-              ></a>
-              <div id="faq3" class="collapse" data-parent="#faq-list">
-                <p>
-                - Creating the best dataset in existence for flood prediction in India.<br>
-                - Making a highly effective ML model with over 98% accuracy.<br>
-                - Making a clean-looking UI for the web app.<br>
-                - Creating sophisticated plots for data visualization.<br>
-                </p>
-              </div>
-            </li>
-
-            <li>
-              <a data-toggle="collapse" href="#faq4" class="collapsed"
-                >What is next for floodML<i class="ion-android-remove"></i
-              ></a>
-              <div id="faq4" class="collapse" data-parent="#faq-list">
-                <p>
-                - Expanding to surrounding nations such as Bangladesh, Myanmar, Pakistan etc.<br>
-                - Making an image classification model for satellite images in flood areas<br>
-                - Writing a research paper on our project<br>
-                </p>
-              </div>
-            </li>
+        <div class="card">
+          <div class="label">Forecast outlook</div>
+          <ul id="forecast-list">
+            <li>Forecast data unavailable.</li>
           </ul>
         </div>
-      </section>
-      <!-- #faq -->
-    </main>
+      </div>
 
-    <!--==========================
-    Footer
-  ============================-->
-    <footer id="footer" class="section-bg" style="background-color: #f5f8fd;">
-      <div class="footer-top">
-        <div class="container">
-          <div class="row">
-            <div class="col-lg-6">
-              <div class="row">
-                <div class="col-sm-11">
-                  <div class="footer-info">
-                    <!-- <h3>FloodML</h3> -->
-                    <a href="index.html" class="scrollto"
-                      ><img
-                        style="margin-top: 0px; max-height: 100px;"
-                        src="{{ url_for('static', filename='img/logo.png') }}"
-                        alt=""
-                        class="img-fluid"
-                    /></a>
-                    <p style="padding-top:20px;">
-                      FloodML is a tool that uses Machine Learning and Data
-                      Visualization to show you plots and heatmaps with
-                      realtime flood information, as well locational predictions about 
-                      future floods and potential damage.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-lg-6">
-              <div class="form">
-                <h4>Send us a message</h4>
-
-                <form action="" method="post" role="form" class="contactForm">
-                  <div class="form-group">
-                    <input
-                      type="text"
-                      name="name"
-                      class="form-control"
-                      id="name"
-                      placeholder="Your Name"
-                      data-rule="minlen:4"
-                      data-msg="Please enter at least 4 chars"
-                    />
-                    <div class="validation"></div>
-                  </div>
-                  <div class="form-group">
-                    <input
-                      type="email"
-                      class="form-control"
-                      name="email"
-                      id="email"
-                      placeholder="Your Email"
-                      data-rule="email"
-                      data-msg="Please enter a valid email"
-                    />
-                    <div class="validation"></div>
-                  </div>
-                  <div class="form-group">
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="subject"
-                      id="subject"
-                      placeholder="Subject"
-                      data-rule="minlen:4"
-                      data-msg="Please enter at least 8 chars of subject"
-                    />
-                    <div class="validation"></div>
-                  </div>
-
-                  <div id="sendmessage">
-                    Your message has been sent. Thank you!
-                  </div>
-                  <div id="errormessage"></div>
-
-                  <div class="text-center">
-                    <button type="submit" title="Send Message">
-                      Send Message
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="label">Alert guidance</div>
+          <ul id="action-list">
+            {% if data.water_management and data.water_management.actions %}
+              {% for action in data.water_management.actions %}
+                <li>{{ action }}</li>
+              {% endfor %}
+            {% else %}
+              <li>Continue normal monitoring.</li>
+            {% endif %}
+          </ul>
+        </div>
+        <div class="card">
+          <div class="label">Recent alerts</div>
+          <ul id="alerts-list">
+            {% if alerts %}
+              {% for item in alerts %}
+                <li>{{ item.title }} — {{ item.risk_level }}</li>
+              {% endfor %}
+            {% else %}
+              <li>No alerts logged yet.</li>
+            {% endif %}
+          </ul>
         </div>
       </div>
-    </footer>
-    <!-- #footer -->
+    </div>
 
-    <a href="#" class="back-to-top"><i class="fa fa-chevron-up"></i></a>
-    <!-- Uncomment below i you want to use a preloader -->
-    <!-- <div id="preloader"></div> -->
+    <script>
+      let map;
+      let riskChart;
+      let refreshSequence = 0;
 
-    <!-- JavaScript Libraries -->
-    <script src="{{ url_for('static', filename='lib/jquery/jquery.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/jquery/jquery-migrate.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/easing/easing.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/mobile-nav/mobile-nav.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/wow/wow.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/counterup/counterup.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/owlcarousel/owl.carousel.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/isotope/isotope.pkgd.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/lightbox/js/lightbox.min.js') }}"></script>
-    <!-- Contact Form JavaScript File -->
-    <script src="{{ url_for('static', filename='contactform/contactform.js') }}"></script>
+      function toRiskClass(risk) {
+        if (risk === 'LOW') return 'status-low';
+        if (risk === 'MODERATE') return 'status-moderate';
+        if (risk === 'HIGH') return 'status-high';
+        if (risk === 'CRITICAL') return 'status-critical';
+        return 'status-unavailable';
+      }
 
-    <!-- Template Main Javascript File -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+      function updateMap(lat, lon, label) {
+        if (!map) {
+          map = L.map('mini-map', { zoomControl: true, scrollWheelZoom: false }).setView([lat || 17.385, lon || 78.4867], 7);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+          }).addTo(map);
+        }
+
+        map.setView([lat || 17.385, lon || 78.4867], 7);
+        map.eachLayer((layer) => {
+          if (layer instanceof L.Marker) {
+            map.removeLayer(layer);
+          }
+        });
+
+        L.marker([lat || 17.385, lon || 78.4867]).addTo(map).bindPopup(label || 'Monitoring point');
+      }
+
+      function updateChart(historyRows) {
+        const points = (historyRows || []).filter((row) => row && row.probability !== null && row.probability !== undefined).slice(0, 8).reverse();
+        const labels = points.map((row) => {
+          const d = new Date(row.created_at || Date.now());
+          return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        });
+        const values = points.map((row) => Number(row.probability) || 0);
+
+        const ctx = document.getElementById('riskChart');
+        if (!ctx) return;
+
+        if (riskChart) {
+          riskChart.destroy();
+        }
+
+        if (!values.length) {
+          document.getElementById('chartPlaceholder').textContent = 'No historical alerts yet for this site.';
+          return;
+        }
+
+        document.getElementById('chartPlaceholder').textContent = 'Coverage over recent alerts';
+        riskChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Flood probability (%)',
+              data: values,
+              borderColor: '#47b6ff',
+              backgroundColor: 'rgba(71, 182, 255, 0.22)',
+              tension: 0.3,
+              fill: true,
+              pointRadius: 4,
+              pointBackgroundColor: '#6ee7b7'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                grid: { color: 'rgba(255,255,255,0.08)' },
+                ticks: { color: '#dfeaf6' }
+              },
+              x: {
+                grid: { display: false },
+                ticks: { color: '#dfeaf6' }
+              }
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: true }
+            }
+          }
+        });
+      }
+
+      function updateView(payload) {
+        const locationName = payload.location || document.getElementById('location-input').value.trim() || 'Hyderabad';
+        document.getElementById('location-title').textContent = locationName;
+        const risk = payload.data && payload.data.risk_level ? payload.data.risk_level : 'Data unavailable';
+        const pill = document.getElementById('risk-pill');
+        pill.textContent = risk;
+        pill.className = 'status-pill ' + toRiskClass(risk);
+
+        const summary = payload.data && payload.data.weather ? (payload.data.weather.message || payload.data.weather.condition || 'Weather summary unavailable') : 'Weather summary unavailable';
+        document.getElementById('summary-text').textContent = summary;
+        document.getElementById('probability-value').textContent = payload.data && payload.data.probability !== null ? payload.data.probability + '%' : 'Data unavailable';
+        document.getElementById('water-status').textContent = payload.data && payload.data.water_management ? payload.data.water_management.status : 'Data unavailable';
+        document.getElementById('temperature-value').textContent = payload.data && payload.data.weather ? payload.data.weather.temperature : 'Data unavailable';
+        document.getElementById('rainfall-value').textContent = payload.data && payload.data.weather ? payload.data.weather.rainfall : 'Data unavailable';
+
+        const list = document.getElementById('action-list');
+        if (payload.data && payload.data.water_management && payload.data.water_management.actions) {
+          list.innerHTML = payload.data.water_management.actions.map((a) => '<li>' + a + '</li>').join('');
+        }
+
+        const coords = payload.data && payload.data.coordinates ? payload.data.coordinates : { lat: 17.385, lon: 78.4867 };
+        updateMap(coords.lat, coords.lon, locationName);
+        document.getElementById('last-updated').textContent = 'Latest update: ' + new Date().toLocaleTimeString();
+      }
+
+      function loadHistory(locationName, sequence) {
+        const city = locationName || document.getElementById('location-input').value.trim() || 'Hyderabad';
+        fetch('/api/history?location=' + encodeURIComponent(city))
+          .then((response) => response.json())
+          .then((payload) => {
+            if (sequence === undefined || sequence === refreshSequence) {
+              updateChart(payload && payload.history ? payload.history : []);
+            }
+          })
+          .catch(() => {
+            if (sequence === undefined || sequence === refreshSequence) {
+              updateChart([]);
+            }
+          });
+      }
+
+      function loadForecast(locationName, sequence) {
+        fetch('/api/forecast?location=' + encodeURIComponent(locationName))
+          .then((response) => response.json())
+          .then((payload) => {
+            if (sequence !== undefined && sequence !== refreshSequence) return;
+            if (payload && payload.projection && payload.projection.status === 'ok' && payload.projection.projections) {
+              const items = payload.projection.projections['24h'] || [];
+              renderForecast(items);
+            } else {
+              const message = payload && payload.projection && payload.projection.message
+                ? payload.projection.message
+                : 'Forecast data unavailable.';
+              renderForecast([], message);
+            }
+          })
+          .catch(() => {
+            if (sequence === undefined || sequence === refreshSequence) {
+              renderForecast([], 'Forecast data temporarily unavailable.');
+            }
+          });
+      }
+
+      function renderForecast(items, emptyMessage) {
+        const list = document.getElementById('forecast-list');
+        const entries = Array.isArray(items) ? items.slice(0, 4) : [];
+        if (!entries.length) {
+          list.innerHTML = '<li>' + (emptyMessage || 'Forecast data unavailable.') + '</li>';
+          return;
+        }
+
+        list.innerHTML = entries.map((item) => {
+          const stamp = item && item.timestamp ? new Date(item.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric' }) : 'Forecast';
+          const value = item && item.probability !== undefined ? `${Number(item.probability).toFixed(1)}%` : 'n/a';
+          const risk = item && item.risk_level ? item.risk_level : 'LOW';
+          return '<li><strong>' + stamp + '</strong> — ' + risk + ' (' + value + ')</li>';
+        }).join('');
+      }
+
+      function refreshDashboard(city) {
+        const sequence = ++refreshSequence;
+        fetch('/api/predict?location=' + encodeURIComponent(city))
+          .then((response) => response.json())
+          .then((payload) => {
+            if (sequence !== refreshSequence) return;
+            updateView(payload);
+            const selectedLocation = payload.location || city;
+            loadHistory(selectedLocation, sequence);
+            loadForecast(selectedLocation, sequence);
+          })
+          .catch(() => {
+            if (sequence === refreshSequence) {
+              document.getElementById('summary-text').textContent = 'Data unavailable';
+            }
+          });
+      }
+
+      document.getElementById('location-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const city = document.getElementById('location-input').value.trim() || 'Hyderabad';
+        refreshDashboard(city);
+      });
+
+      window.addEventListener('load', function() {
+        const city = document.getElementById('location-input').value.trim() || 'Hyderabad';
+        refreshDashboard(city);
+      });
+    </script>
   </body>
 </html>

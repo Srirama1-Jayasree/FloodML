@@ -1,0 +1,1 @@
+"""AquaSentinel AI service package."""

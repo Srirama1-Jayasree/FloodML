@@ -1,0 +1,88 @@
+{
+  "status": "ok",
+  "generated_at": "2026-10-08T17:31:53Z",
+  "data_file": "training/final_data.csv",
+  "sample_count": 5040,
+  "class_counts": {
+    "0": 2040,
+    "1": 3000
+  },
+  "features": [
+    "temp",
+    "max_temp",
+    "wind_speed",
+    "cloudcover",
+    "precip",
+    "humidity"
+  ],
+  "target": "class",
+  "split": {
+    "strategy": "stratified train/test split",
+    "test_size_percent": 20.0,
+    "random_state": 42,
+    "training_samples": 4032,
+    "test_samples": 1008
+  },
+  "models": [
+    {
+      "name": "Random Forest",
+      "metrics": {
+        "accuracy": 99.11,
+        "precision": 100.0,
+        "recall": 98.5,
+        "f1_score": 99.24,
+        "roc_auc": 99.71
+      }
+    },
+    {
+      "name": "Gradient Boosting",
+      "metrics": {
+        "accuracy": 99.01,
+        "precision": 100.0,
+        "recall": 98.33,
+        "f1_score": 99.16,
+        "roc_auc": 99.77
+      }
+    },
+    {
+      "name": "Decision Tree",
+      "metrics": {
+        "accuracy": 98.12,
+        "precision": 98.18,
+        "recall": 98.67,
+        "f1_score": 98.42,
+        "roc_auc": 97.99
+      }
+    },
+    {
+      "name": "Logistic Regression",
+      "metrics": {
+        "accuracy": 97.92,
+        "precision": 99.49,
+        "recall": 97.0,
+        "f1_score": 98.23,
+        "roc_auc": 99.75
+      }
+    },
+    {
+      "name": "Support Vector Machine",
+      "metrics": {
+        "accuracy": 97.92,
+        "precision": 98.82,
+        "recall": 97.67,
+        "f1_score": 98.24,
+        "roc_auc": 99.85
+      }
+    },
+    {
+      "name": "K-Nearest Neighbors",
+      "metrics": {
+        "accuracy": 96.23,
+        "precision": 96.52,
+        "recall": 97.17,
+        "f1_score": 96.84,
+        "roc_auc": 98.87
+      }
+    }
+  ]
+}
